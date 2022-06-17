@@ -42,18 +42,11 @@ public class PhysicCircle extends Circle {
         double diffX = this.getCenterX() - particle.getCenterX();
         double diffY = this.getCenterY() - particle.getCenterY();
 
-        if ((diffX < 0) && (diffY < 0)) {
-            this.setCenterX(this.getCenterX() + timeQuantumDistance);
-            this.setCenterY(this.getCenterY() + timeQuantumDistance);
-        } else if ((diffX < 0) && (diffY > 0)) {
-            this.setCenterX(this.getCenterX() + timeQuantumDistance);
-            this.setCenterY(this.getCenterY() - timeQuantumDistance);
-        } else if ((diffX > 0) && (diffY > 0)) {
-            this.setCenterX(this.getCenterX() - timeQuantumDistance);
-            this.setCenterY(this.getCenterY() - timeQuantumDistance);
-        } else if ((diffX < 0) && (diffY > 0)) {
-            this.setCenterX(this.getCenterX() - timeQuantumDistance);
-            this.setCenterY(this.getCenterY() - timeQuantumDistance);
-        }
+        Platform.runLater(() -> {
+            double angle = atan2(diffY, diffX);
+
+            this.setCenterX(this.getCenterX() - timeQuantumDistance * Math.cos(angle));
+            this.setCenterY(this.getCenterY() - timeQuantumDistance * Math.sin(angle));
+        });
     }
 }
