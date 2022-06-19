@@ -1,5 +1,4 @@
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
@@ -8,45 +7,48 @@ import static java.lang.Math.*;
 
 public class PhysicCircle extends Circle {
 
-    private final int weight;
+    private final double weight;
     private final Pane pane;
 
-    public PhysicCircle(double centerX, double centerY, double radius, Paint fill, int weight, Pane pane) {
+    private final double MINIMAL_DISTANCE = 15;
+
+    public PhysicCircle(double centerX, double centerY, double radius, Paint fill, double weight, Pane pane) {
         super(centerX, centerY, radius, fill);
         this.weight = weight;
         this.pane = pane;
     }
 
-    public int getWeight() {
+    public double getWeight() {
         return weight;
     }
 
-    public void interact(PhysicCircle particle) {
-        if ((particle.getCenterX() == this.getCenterX()) && (particle.getCenterY() == this.getCenterY())) {
-            ObservableList<Node> children = pane.getChildren();
-            children.add(new PhysicCircle(this.getCenterX(), this.getCenterY(), 10, Paint.valueOf("red"), 10, pane));
-            children.remove(particle);
-            children.remove(this);
-        }
-
+    public PhysicCircle interact(PhysicCircle particle) {
         double distance = sqrt(pow((this.getCenterX() - particle.getCenterX()), 2) +
                 pow((this.getCenterY() - particle.getCenterY()), 2));
 
-        double G = 3000;
-        double F = G * ((this.getWeight() * particle.getWeight()) / (distance*distance * 1.0));
-        double a = F / this.getWeight();
-        double T = 0.5;
-        double V = a * T;
-        double timeQuantumDistance = V * T;
+        if (distance < MINIMAL_DISTANCE) {
+            final double newWeight = this.getWeight() + particle.getWeight();
+            final double newRadius = newWeight * 1.5;
+            String color = Color.values()[(int) (Math.random() * Color.values().length)].getColor();
+            return new PhysicCircle(this.getCenterX(), this.getCenterY(), newRadius, Paint.valueOf(color), newWeight, pane);
+        }
 
-        double diffX = this.getCenterX() - particle.getCenterX();
-        double diffY = this.getCenterY() - particle.getCenterY();
+        final double G = 1000;
+        final double F = G * ((this.getWeight() * particle.getWeight()) / (distance*distance * 1.0));
+        final double a = F / this.getWeight();
+        final double T = 0.5;
+        final double V = a * T;
+        final double timeQuantumDistance = V * T;
+
+        final double diffX = this.getCenterX() - particle.getCenterX();
+        final double diffY = this.getCenterY() - particle.getCenterY();
 
         Platform.runLater(() -> {
-            double angle = atan2(diffY, diffX);
-
+            final double angle = atan2(diffY, diffX);
             this.setCenterX(this.getCenterX() - timeQuantumDistance * Math.cos(angle));
             this.setCenterY(this.getCenterY() - timeQuantumDistance * Math.sin(angle));
         });
+
+        return null;
     }
 }
